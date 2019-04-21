@@ -7,119 +7,202 @@
  */
 
 import React from "react";
-import { Image, StyleSheet, Button, View, Text, FlatList } from 'react-native';
+import { ToastAndroid, Alert, Image, StyleSheet, Button, View, Text, FlatList, Dimensions, TouchableHighlight, processColor } from 'react-native';
 import { createStackNavigator, createAppContainer } from "react-navigation";
 import {BarChart, LineChart} from 'react-native-charts-wrapper';
+import NetInfo from "@react-native-community/netinfo";
 
+let windowWidth = Dimensions.get('window').width;
 
 class HomeScreen extends React.Component { 
+  static navigationOptions = {
+    title: 'Home',
+    headerStyle: {
+      backgroundColor: '#1a7da8',
+    },
+    headerTintColor: '#000',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  };
   constructor(){
- 
     super();
- 
-    global.chartValues = [];
   }
   state = {
     myState: true,
     data: '',
-    isLoading: true,
-    values: [{y: 2}, {y: 2}, {y: 4}]
-      }
- updateState = () => {this.setState(previousState => (
-  { myState: !previousState.myState }
-))}
-updateValue = () => {this.setState(
-  {values: [{y: 7}, {y: 7}, {y: 8}]}
-)}
-
-componentDidMount(){
-    return fetch('https://api.thingspeak.com/channels/760594/fields/1.json?results=3')
-      .then((response) => response.json())
-      .then((responseJson) => {
-        console.log(responseJson);
-        this.setState({
-          isLoading: false,
-          dataSource: responseJson.feeds,
-        }, function(){
-
-        });
-
-      })
-      .catch((error) =>{
-        console.error(error);
-      });
+    isConnected: false
   }
 
+componentDidMount(){
+    NetInfo.getConnectionInfo().then(data => {
+    console.log("Connection type", data.type);
+    console.log("Connection effective type", data.effectiveType);
+    if (data.type === 'none') {
+      alert("No internet connection")
+  } else {
+    this.setState({isConnected: true});
+    console.log(this.state.isConnected);
+  }
+    });
+    // return fetch('https://api.thingspeak.com/channels/760594/fields/1.json?results=3')
+    //   .then((response) => response.json())
+    //   .then((responseJson) => {
+    //     console.log(responseJson);
+    //     this.setState({
+    //       isLoading: false,
+    //       dataSource: responseJson.feeds,
+    //     }, function(){
 
+    //     });
+
+    //   })
+    //   .catch((error) =>{
+    //     console.error(error);
+    //   });
+  }
+
+  checkIn = () => {
+    if(this.state.isConnected){
+      this.props.navigation.navigate('First');
+    }
+    else {
+      ToastAndroid.show('No internet connection', ToastAndroid.LONG);
+    }
+  }
 
   render() {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: "#1a7da8" }}>
-        <Text style={{flex: 0.2, alignItems: 'center', justifyContent: 'flex-start', color:"white"}}>
-        WELCOME FELLAS, NEED SOME WEED?
-        </Text>
-        <Image
-        style={{
-          width: 200, height: 200
-        }}
-          source={require('./images/dishornored_symbol.jpg')}
-        />
-        <Button
-          style={{backgroundColor: '#2196F3'}}
-          title="Go to my charts"
-          onPress={() => this.props.navigation.navigate('First')}
-        />
-        <Button
-          style={{
-            backgroundColor: '#2196F5',
-            justifyContent: 'flex-end'
-          }}
-          title="Get out"
-          onPress={this.updateState}
-        />
+      <View style={{ 
+        flex: 1, 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        backgroundColor: "#1c87ce",
+        flexDirection: 'column' }}>
+          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth, borderWidth: 3, borderColor: '#0a2059', borderStyle: 'solid', backgroundColor: '#468096'}}>
+              <Text style={{
+                flex: 0.5,  
+                color:"white",
+                fontWeight: 'bold',
+                fontSize: 45,
+                textAlign: "center"
+                }}>
+                JACK ANGLE'S {"\n"}
+                THESIS APP
+              </Text>
+          </View>
+          
+          <View style={{flex: 1}}>
+            <TouchableHighlight onPress={this.checkIn}>
+                <Image
+                  style={{
+                    flex: 1,
+                    // width: 300, height: 300
+                    resizeMode: 'contain'
+                }}
+                  source={require('./images/dishornored_symbol.jpg')}
+                />
+            </TouchableHighlight>
+          </View>
+            
+          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth}}>
+          <Text style={{
+                flex: 0.5,  
+                color:"white",
+                fontWeight: 'bold',
+                fontSize: 23,
+                textAlign: "center"
+                }}>
+                CLICK THE IMAGE TO CONTINUE
+              </Text>
+          </View>
 
-        <Text onPress = {this.updateState}
-        style={{color:"white"}}
-        >
-          {this.state.myState? 'PLEASE GET OUT OF MY LIFE' : 'JUST A JOKE, PLS STAY :3 ' }
-        </Text>
-        <View style={{flex: 1, paddingTop:20}}>
-        <FlatList
-          data={this.state.dataSource}
-          renderItem={({item}) => <Text>Temperature: {item.field1}</Text>}
-          keyExtractor={({created_at}, index) => created_at}
-        />
-      </View>
-        {/* <Image
-        style={{
-          width: 600, height: 400
-        }}
-          source={require('./images/dishonored.jpeg')}
-        /> */}
-      </View>
+        </View>
     );
   }
 }
 
 class FirstScreen extends React.Component {
+  static navigationOptions = {
+    title: '1st Sensor',
+    headerStyle: {
+      backgroundColor: '#1a7da8',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  };
+  constructor(props) {
+    super(props);
+    this.state = {values: []};
+
+    //this. getDataUsingGet = this. getDataUsingGet.bind(this);
+  }
+
+  getDataUsingGet = () => {
+    ToastAndroid.show('A pikachu appeared nearby !', ToastAndroid.LONG);
+    //GET request 
+    fetch('https://api.thingspeak.com/channels/760594/fields/1.json', {
+        method: 'GET'
+        //Request Type 
+    })
+    .then((response) => response.json())
+    //If response is in json then in success
+    .then((responseJson) => {
+        //Success 
+        console.log(responseJson);
+        this.setState({ 
+          values: []
+        })    
+        for (var i = 0; i < responseJson.feeds.length; i++){
+          console.log("FEED");
+          var obj = responseJson.feeds[i];
+          console.log(obj);
+          console.log(obj.field1);   
+
+          /*Create {x: , y: } */
+          var temp = new Object();
+          //temp['x'] = Number(4);
+          temp['y'] = Number(obj.field1);  
+          
+          /*Add it to values array */
+          this.setState({ 
+            values: [...this.state.values, temp]
+          })      
+        }
+	    
+    })
+    //If response is not in json then in error
+    .catch((error) => {
+        //Error 
+        alert(JSON.stringify(error));
+        console.error(error);
+    });
+  };
+
   render() {
     return (
       <View style={{flex: 1}}>
         <View style={styles.container}>
-          <BarChart style={styles.chart}
-            data={{dataSets:[{label: "FIRST SCREEN", values: [{y: 1}, {y: 5}, {y: 6}, {y: 9}, {y: 6}]}]}}
+          <BarChart 
+            style={styles.chart}
+            data={{dataSets:[{label: "FIRST SCREEN", values: this.state.values}]}}
+            touchEnabled={true}
+            onSelect = {this.getDataUsingGet}
           />
-          <View style={styles.buttonContainer}>
 
+          <View style={styles.buttonContainer}>
             <View style={styles.buttonView}>
-              <Button
+              {/* <Button
               style={styles.button} 
               title="PREVIOUS PAGE"
-              />
+              onPress={this.getDataUsingGet}
+              /> */}
             </View>
 
             <View style={styles.buttonView}>
-            <Button
+            {/* <Button
             style={{
               flex: 1,
               justifyContent: 'center',
@@ -127,7 +210,7 @@ class FirstScreen extends React.Component {
             }}
             title="MIDDLE FINGER"
             onPress={() => this.props.navigation.navigate('Belfast')}
-            />
+            /> */}
             </View>
             
             <Button
@@ -149,15 +232,29 @@ class FirstScreen extends React.Component {
 
 
 class SecondScreen extends React.Component {
+  static navigationOptions = {
+    title: '2nd Sensor',
+    headerStyle: {
+      backgroundColor: '#1a7da8',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  };
   constructor(props) {
     super(props);
-    this.state = {values: [{y: 2}, {y: 2}, {y: 4}]};
+    this.state = {
+      temperatureValues: [],
+      humidityValues: []
+    };
 
-    this. getDataUsingGet = this. getDataUsingGet.bind(this);
+    //this. getDataUsingGet = this. getDataUsingGet.bind(this);
   }
   getDataUsingGet = () => {
+    ToastAndroid.show('A hentai kamen appeared nearby !', ToastAndroid.LONG);
     //GET request 
-    fetch('https://api.thingspeak.com/channels/760594/fields/1.json?results=3', {
+    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
         method: 'GET'
         //Request Type 
     })
@@ -166,16 +263,37 @@ class SecondScreen extends React.Component {
     .then((responseJson) => {
         //Success 
         console.log(responseJson);
+        this.setState({ 
+          temperatureValues: [],
+          humidityValues: []
+        })     
         for (var i = 0; i < responseJson.feeds.length; i++){
           console.log("FEED");
           var obj = responseJson.feeds[i];
           console.log(obj);
           console.log(obj.field1);   
-          var temp = new Object();
-          temp['y'] = Number(obj.field1);  
+          console.log(obj.field2); 
+
+          /*Create {x: , y: } */
+          let temp = new Object();
+          let humid = new Object();
+          //temp['x'] = Number(4);
+          if (obj.field1 != null){
+            temp['y'] = Number(obj.field1); 
+          } else{
+            temp['y'] = 0; 
+          }
+          if (obj.field2 != null){
+            humid['y'] = Number(obj.field2); 
+          } 
+          else{
+            humid['y'] = 0; 
+          }
           
+          /*Add it to values array */
           this.setState({ 
-            values: [...this.state.values, temp]
+            temperatureValues: [...this.state.temperatureValues, temp],
+            humidityValues: [...this.state.humidityValues, humid]
           })      
         }
 	    
@@ -188,15 +306,51 @@ class SecondScreen extends React.Component {
     });
   };
   
-  updateValue = () => {this.setState(
-        {values: [{y: 7}, {y: 12}, {y: 8}]}
-      )}    
+  // updateValue = () => {this.setState(
+  //       {values: [{y: 7}, {y: 12}, {y: 8}]}
+  //     )}    
   render() {
     return (
       <View style={{flex: 1}}>
         <View style={styles.container}>
-          <LineChart style={styles.chart}
-            data={{dataSets:[{label: "SECOND SCREEN", values: this.state.values}]}}
+          <LineChart 
+            style={styles.chart}
+            data={{dataSets:[{label: "Temperature (Celcius)", values: this.state.temperatureValues, 
+              config: {circleColor:processColor('white'),
+              drawValues: false,
+              drawCircleHole: false,
+              circleRadius: 2,
+              highlightColor: processColor('orange'),
+              color:processColor('darkblue'),
+              drawFilled: true,
+              fillGradient: {
+                colors: [processColor('darkblue'), processColor('aqua')],
+                orientation: "TOP_BOTTOM"
+              },
+              fillAlpha: 1500
+            }}, 
+
+              {label: "Humidity (%)", values: this.state.humidityValues,
+              config: {circleColor:processColor('white'),
+              drawValues: false,
+              drawCircleHole: false,
+              circleRadius: 2,
+              color:processColor('green'),
+              drawFilled: true,
+              fillGradient: {
+                colors: [processColor('darkgreen'), processColor('greenyellow')],
+                positions: [0, 0.5],
+                angle: 90,
+                orientation: "TOP_BOTTOM"
+              },
+              fillAlpha: 1500
+            }
+            }]}}
+
+            yAxis= {{ left:{ axisMaximum: 100, axisMinimum: 0 }, right:{ axisMaximum: 100, axisMinimum: 0 }}}
+            chartDescription={{ text: "DATE" }}
+            touchEnabled={true}
+            onSelect = {this.getDataUsingGet}
           />
           <View style={styles.buttonContainer}>
 
@@ -209,7 +363,7 @@ class SecondScreen extends React.Component {
             </View>
 
             <View style={styles.buttonView}>
-            <Button
+            {/* <Button
             style={{
               flex: 1,
               justifyContent: 'center',
@@ -217,7 +371,7 @@ class SecondScreen extends React.Component {
             }}
             title="MIDDLE"
             onPress={this.getDataUsingGet}
-            />
+            /> */}
             </View>
             
             <Button
@@ -283,7 +437,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1f2041',
   },
-
 
   firstrow: {
     flex: 1,
