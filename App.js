@@ -9,62 +9,67 @@
 import React from "react";
 import { ToastAndroid, Alert, Image, StyleSheet, Button, View, Text, FlatList, Dimensions, TouchableHighlight, processColor } from 'react-native';
 import { createStackNavigator, createAppContainer } from "react-navigation";
-import {BarChart, LineChart} from 'react-native-charts-wrapper';
+
 import NetInfo from "@react-native-community/netinfo";
+import Moment from 'moment';
+import PureChart from 'react-native-pure-chart';
 
 let windowWidth = Dimensions.get('window').width;
+let windowHeight = Dimensions.get('window').height;
 
-class HomeScreen extends React.Component { 
+class HomeScreen extends React.Component {
   static navigationOptions = {
-    title: 'Home',
+    title: 'HOME',
     headerStyle: {
-      backgroundColor: '#1a7da8',
+      backgroundColor: 'lawngreen',
     },
     headerTintColor: '#000',
     headerTitleStyle: {
       fontWeight: 'bold',
     },
   };
-  constructor(){
+  constructor() {
     super();
-  }
-  state = {
-    myState: true,
-    data: '',
-    isConnected: false
+    state = {
+      myState: true,
+      data: '',
+      isConnected: false
+    }
   }
 
-componentDidMount(){
+
+
+
+  componentDidMount() {
     NetInfo.getConnectionInfo().then(data => {
-    console.log("Connection type", data.type);
-    console.log("Connection effective type", data.effectiveType);
-    if (data.type === 'none') {
-      alert("No internet connection")
-  } else {
-    this.setState({isConnected: true});
-    console.log(this.state.isConnected);
-  }
-    });
-    // return fetch('https://api.thingspeak.com/channels/760594/fields/1.json?results=3')
-    //   .then((response) => response.json())
-    //   .then((responseJson) => {
-    //     console.log(responseJson);
-    //     this.setState({
-    //       isLoading: false,
-    //       dataSource: responseJson.feeds,
-    //     }, function(){
+      console.log("Connection type", data.type);
+      console.log("Connection effective type", data.effectiveType);
+      if (data.type == 'none' || data.type == 'unknown') {
+        Alert.alert("No internet connection")
+      } else {
+        this.setState({ isConnected: true });
+        console.log(this.state.isConnected);
+      }
+    }
+    );
 
-    //     });
+    const netInfoListener = data => {
+      if (data.type == 'none' || data.type == 'unknown') {
+        this.setState({ isConnected: false });
+        ToastAndroid.show('Connection error! Return to Home', ToastAndroid.LONG);
+        this.props.navigation.navigate('Home');
 
-    //   })
-    //   .catch((error) =>{
-    //     console.error(error);
-    //   });
+      } else {
+        this.setState({ isConnected: true });
+      }
+    }
+
+    const subscription = NetInfo.addEventListener('connectionChange', netInfoListener);
   }
 
   checkIn = () => {
-    if(this.state.isConnected){
-      this.props.navigation.navigate('First');
+    if (this.state.isConnected) {
+      { this.props.navigation.navigate('First') };
     }
     else {
       ToastAndroid.show('No internet connection', ToastAndroid.LONG);
@@ -73,26 +78,27 @@ componentDidMount(){
 
   render() {
     return (
-      <View style={{ 
-        flex: 1, 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
+      <View style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: "#1c87ce",
-        flexDirection: 'column' }}>
-          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth, borderWidth: 3, borderColor: '#0a2059', borderStyle: 'solid', backgroundColor: '#468096'}}>
-              <Text style={{
-                flex: 0.5,  
-                color:"white",
-                fontWeight: 'bold',
-                fontSize: 45,
-                textAlign: "center"
-                }}>
-                JACK ANGLE'S {"\n"}
-                THESIS APP
+        flexDirection: 'column'
+      }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth, borderWidth: 3, borderColor: '#0a2059', borderStyle: 'solid', backgroundColor: 'gold' }}>
+          <Text style={{
+            flex: 0.5,
+            color: "white",
+            fontWeight: 'bold',
+            fontSize: 38,
+            textAlign: "center"
+          }}>
+            HỆ THỐNG THU THẬP {"\n"}
+            DỮ LIỆU QUA WIFI
               </Text>
-          </View>
-          
-          <View style={{flex: 1}}>
+        </View>
+
+        {/* <View style={{flex: 1}}>
             <TouchableHighlight onPress={this.checkIn}>
                 <Image
                   style={{
@@ -104,125 +110,89 @@ componentDidMount(){
                 />
             </TouchableHighlight>
           </View>
-            
-          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth}}>
+             */}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth, backgroundColor: 'black' }}>
           <Text style={{
-                flex: 0.5,  
-                color:"white",
-                fontWeight: 'bold',
-                fontSize: 23,
-                textAlign: "center"
-                }}>
-                CLICK THE IMAGE TO CONTINUE
+            flex: 0.5,
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: 23,
+            textAlign: "center"
+          }}>
+            CHỌN SENSOR MUỐN XEM {"\n"}
+            (cần kết nối Internet)
               </Text>
+        </View>
+
+        <View style={{
+          flex: 0.5,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'yellow' }}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('First')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                1ST SENSOR
+              </Text>
+            </TouchableHighlight>
           </View>
 
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'yellow' }}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Second')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                2ND SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
         </View>
-    );
-  }
-}
 
-class FirstScreen extends React.Component {
-  static navigationOptions = {
-    title: '1st Sensor',
-    headerStyle: {
-      backgroundColor: '#1a7da8',
-    },
-    headerTintColor: '#fff',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-    },
-  };
-  constructor(props) {
-    super(props);
-    this.state = {values: []};
+        <View style={{
+          flex: 0.5,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
 
-    //this. getDataUsingGet = this. getDataUsingGet.bind(this);
-  }
+          <View style={{ flex: 1, backgroundColor: 'yellow', borderWidth: 3, borderColor: 'black' }}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Third')}
+            >
+              <Text style={{ color: "black", fontWeight: 'bold', }}>
+                3RD SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
 
-  getDataUsingGet = () => {
-    ToastAndroid.show('A pikachu appeared nearby !', ToastAndroid.LONG);
-    //GET request 
-    fetch('https://api.thingspeak.com/channels/760594/fields/1.json', {
-        method: 'GET'
-        //Request Type 
-    })
-    .then((response) => response.json())
-    //If response is in json then in success
-    .then((responseJson) => {
-        //Success 
-        console.log(responseJson);
-        this.setState({ 
-          values: []
-        })    
-        for (var i = 0; i < responseJson.feeds.length; i++){
-          console.log("FEED");
-          var obj = responseJson.feeds[i];
-          console.log(obj);
-          console.log(obj.field1);   
-
-          /*Create {x: , y: } */
-          var temp = new Object();
-          //temp['x'] = Number(4);
-          temp['y'] = Number(obj.field1);  
-          
-          /*Add it to values array */
-          this.setState({ 
-            values: [...this.state.values, temp]
-          })      
-        }
-	    
-    })
-    //If response is not in json then in error
-    .catch((error) => {
-        //Error 
-        alert(JSON.stringify(error));
-        console.error(error);
-    });
-  };
-
-  render() {
-    return (
-      <View style={{flex: 1}}>
-        <View style={styles.container}>
-          <BarChart 
-            style={styles.chart}
-            data={{dataSets:[{label: "FIRST SCREEN", values: this.state.values}]}}
-            touchEnabled={true}
-            onSelect = {this.getDataUsingGet}
-          />
-
-          <View style={styles.buttonContainer}>
-            <View style={styles.buttonView}>
-              {/* <Button
-              style={styles.button} 
-              title="PREVIOUS PAGE"
-              onPress={this.getDataUsingGet}
-              /> */}
-            </View>
-
-            <View style={styles.buttonView}>
-            {/* <Button
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            title="MIDDLE FINGER"
-            onPress={() => this.props.navigation.navigate('Belfast')}
-            /> */}
-            </View>
-            
-            <Button
-            style={{
-              flex: 1,
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-            }}
-            title="NEXT PAGE"
-            onPress={() => this.props.navigation.navigate('Second')}
-            />
-            
+          <View style={{ flex: 1, backgroundColor: 'yellow', borderWidth: 3, borderColor: 'black' }}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Fourth')}
+            >
+              <Text style={{ color: "black", fontWeight: 'bold', }}>
+                4TH SENSOR
+              </Text>
+            </TouchableHighlight>
           </View>
         </View>
       </View>
@@ -230,10 +200,16 @@ class FirstScreen extends React.Component {
   }
 }
 
-
-class SecondScreen extends React.Component {
-  static navigationOptions = {
-    title: '2nd Sensor',
+class FirstScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+    title: '1st Sensor',
+    headerRight: (
+      <Button
+        onPress={() => navigation.navigate('Home')}
+        title="HOME"
+        color="green"
+      />
+    ),
     headerStyle: {
       backgroundColor: '#1a7da8',
     },
@@ -241,150 +217,789 @@ class SecondScreen extends React.Component {
     headerTitleStyle: {
       fontWeight: 'bold',
     },
-  };
+  });
+
   constructor(props) {
     super(props);
+
     this.state = {
-      temperatureValues: [],
-      humidityValues: []
+      temperatureValues: [0],
+      humidityValues: [0],
+      isFetching: false
     };
 
-    //this. getDataUsingGet = this. getDataUsingGet.bind(this);
   }
+
   getDataUsingGet = () => {
-    ToastAndroid.show('A hentai kamen appeared nearby !', ToastAndroid.LONG);
+    this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
+    ToastAndroid.show('Loading...', ToastAndroid.LONG);
     //GET request 
     fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
-        method: 'GET'
-        //Request Type 
+      method: 'GET'
+      //Request Type 
     })
-    .then((response) => response.json())
-    //If response is in json then in success
-    .then((responseJson) => {
+      .then((response) => response.json())
+      //If response is in json then in success
+      .then((responseJson) => {
         //Success 
         console.log(responseJson);
-        this.setState({ 
+        this.setState({
           temperatureValues: [],
           humidityValues: []
-        })     
-        for (var i = 0; i < responseJson.feeds.length; i++){
-          console.log("FEED");
-          var obj = responseJson.feeds[i];
-          console.log(obj);
-          console.log(obj.field1);   
-          console.log(obj.field2); 
+        })
+
+        for (let i = 0; i < responseJson.feeds.length; i++) {
+          // console.log("FEED");
+          let obj = responseJson.feeds[i];
+          let dateTimeTemp = obj.created_at;
+
 
           /*Create {x: , y: } */
           let temp = new Object();
           let humid = new Object();
-          //temp['x'] = Number(4);
-          if (obj.field1 != null){
-            temp['y'] = Number(obj.field1); 
-          } else{
-            temp['y'] = 0; 
+          if (obj.field1 != null) {
+
+            temp['y'] = Number(obj.field1);
+            temp['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            console.log(temp.x);
+            this.setState({
+              temperatureValues: [...this.state.temperatureValues, temp]
+            })
           }
-          if (obj.field2 != null){
-            humid['y'] = Number(obj.field2); 
-          } 
-          else{
-            humid['y'] = 0; 
+          if (obj.field2 != null) {
+
+            humid['y'] = Number(obj.field2);
+            humid['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              humidityValues: [...this.state.humidityValues, humid]
+            })
           }
-          
-          /*Add it to values array */
-          this.setState({ 
-            temperatureValues: [...this.state.temperatureValues, temp],
-            humidityValues: [...this.state.humidityValues, humid]
-          })      
         }
-	    
-    })
-    //If response is not in json then in error
-    .catch((error) => {
+
+        /*Check if length of data equals to 0 then set value 0 to chart so that the chart can be display */
+        if (!this.state.temperatureValues.length) {
+          this.setState({
+            temperatureValues: [0]
+          })
+        }
+        if (!this.state.humidityValues.length) {
+          this.setState({
+            humidityValues: [0]
+          })
+        }
+        this.setState({ isFetching: false }, () => {
+          console.log("After fetching: " + this.state.isFetching),
+            console.log(JSON.stringify(this.state.temperatureValues)),
+            console.log(JSON.stringify(this.state.humidityValues))
+        });
+      })
+      //If response is not in json then in error
+      .catch((error) => {
         //Error 
         alert(JSON.stringify(error));
+        this.setState({ isFetching: false }, () => { console.log("After fetching: " + this.state.isFetching) });
         console.error(error);
-    });
+      });
   };
-  
+
+  render() {
+    const { navigation } = this.props.navigation;
+
+    return (
+      <View style={{ flex: 1, backgroundColor: 'dodgerblue' }}>
+        <View style={styles.container}>
+          <View style={{ flex:9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.temperatureValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1,
+                alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                TEMPERATURE(&deg;C)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+
+          </View>
+        </View>
+
+        <View style={styles.container}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.humidityValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                HUMIDITY(%)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <View style={styles.buttonView}>
+            {/* <Button
+              style={styles.button} 
+              title="PREVIOUS SENSOR"
+              onPress={this.getDataUsingGet}
+              /> */}
+          </View>
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Button
+                title="LOAD DATA"
+                disabled={this.state.isFetching}
+                onPress={this.getDataUsingGet}
+              />
+            </TouchableHighlight>
+          </View>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Second')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                NEXT SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </View>
+
+    );
+  }
+}
+
+
+class SecondScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+    title: '2nd Sensor',
+    headerRight: (
+      <Button
+        onPress={() => navigation.navigate('Home')}
+        title="HOME"
+        color="green"
+      />
+    ),
+    headerStyle: {
+      backgroundColor: '#1a7da8',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  });
+  constructor(props) {
+    super(props);
+    this.state = {
+      temperatureValues: [0],
+      humidityValues: [0],
+      isFetching: false
+    };
+  }
+  getDataUsingGet = () => {
+
+    this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
+    ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
+    //GET request 
+    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+      method: 'GET'
+      //Request Type 
+    })
+      .then((response) => response.json())
+      //If response is in json then in success
+      .then((responseJson) => {
+        //Success 
+        console.log(responseJson);
+        this.setState({
+          temperatureValues: [],
+          humidityValues: []
+        })
+        for (let i = 0; i < responseJson.feeds.length; i++) {
+          // console.log("FEED");
+          let obj = responseJson.feeds[i];
+          // console.log(obj);
+          // console.log(obj.field1);   
+          // console.log(obj.field2); 
+          let dateTimeTemp = obj.created_at;
+
+          /*Create {x: , y: } */
+          let temp = new Object();
+          let humid = new Object();
+          if (obj.field3 != null) {
+            temp['y'] = Number(obj.field3);
+            temp['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              temperatureValues: [...this.state.temperatureValues, temp]
+            })
+          }
+          if (obj.field4 != null) {
+            humid['y'] = Number(obj.field4);
+            humid['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              humidityValues: [...this.state.humidityValues, humid]
+            })
+          }
+        }
+
+        /*Check if length of data equals to 0 then set value 0 to chart so that the chart can be display */
+        if (!this.state.temperatureValues.length) {
+          this.setState({
+            temperatureValues: [0]
+          })
+        }
+        if (!this.state.humidityValues.length) {
+          this.setState({
+            humidityValues: [0]
+          })
+        }
+        this.setState({ isFetching: false }, () => { console.log("After fetching: " + this.state.isFetching) });
+      })
+      //If response is not in json then in error
+      .catch((error) => {
+        //Error 
+        alert(JSON.stringify(error));
+        this.setState({ isFetching: false }, () => { console.log("Error fetching: " + this.state.isFetching) });
+        console.error(error);
+      });
+
+  };
+    
+  render() {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.temperatureValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1,
+                alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                TEMPERATURE(&deg;C)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+
+          </View>
+        </View>
+
+        <View style={styles.container}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.humidityValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                HUMIDITY(%)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('First')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                PREVIOUS SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Button
+                title="LOAD DATA"
+                disabled={this.state.isFetching}
+                onPress={this.getDataUsingGet}
+              />
+            </TouchableHighlight>
+          </View>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Third')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                NEXT SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </View>
+    );
+  }
+}
+
+class ThirdScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+    title: '3rd Sensor',
+    headerRight: (
+      <Button
+        onPress={() => navigation.navigate('Home')}
+        title="HOME"
+        color="green"
+      />
+    ),
+    headerStyle: {
+      backgroundColor: '#1a7da8',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  });
+  constructor(props) {
+    super(props);
+    this.state = {
+      temperatureValues: [0],
+      humidityValues: [0],
+      isFetching: false
+    };
+  }
+
+  getDataUsingGet = () => {
+
+    this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
+    ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
+    //GET request 
+    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+      method: 'GET'
+      //Request Type 
+    })
+      .then((response) => response.json())
+      //If response is in json then in success
+      .then((responseJson) => {
+        //Success 
+        console.log(responseJson);
+        this.setState({
+          temperatureValues: [],
+          humidityValues: []
+        })
+        for (let i = 0; i < responseJson.feeds.length; i++) {
+          // console.log("FEED");
+          let obj = responseJson.feeds[i];
+          // console.log(obj);
+          // console.log(obj.field1);   
+          // console.log(obj.field2); 
+          let dateTimeTemp = obj.created_at;
+
+          /*Create {x: , y: } */
+          let temp = new Object();
+          let humid = new Object();
+          if (obj.field5 != null) {
+            temp['y'] = Number(obj.field5);
+            temp['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              temperatureValues: [...this.state.temperatureValues, temp]
+            })
+          }
+          if (obj.field6 != null) {
+            humid['y'] = Number(obj.field6);
+            humid['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              humidityValues: [...this.state.humidityValues, humid]
+            })
+          }
+        }
+
+        /*Check if length of data equals to 0 then set value 0 to chart so that the chart can be display */
+        if (!this.state.temperatureValues.length) {
+          this.setState({
+            temperatureValues: [0]
+          })
+        }
+        if (!this.state.humidityValues.length) {
+          this.setState({
+            humidityValues: [0]
+          })
+        }
+        this.setState({ isFetching: false }, () => { console.log("After fetching: " + this.state.isFetching) });
+      })
+      //If response is not in json then in error
+      .catch((error) => {
+        //Error 
+        alert(JSON.stringify(error));
+        this.setState({ isFetching: false }, () => { console.log("Error fetching: " + this.state.isFetching) });
+        console.error(error);
+      });
+  };
+
   // updateValue = () => {this.setState(
   //       {values: [{y: 7}, {y: 12}, {y: 8}]}
   //     )}    
   render() {
     return (
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <View style={styles.container}>
-          <LineChart 
-            style={styles.chart}
-            data={{dataSets:[{label: "Temperature (Celcius)", values: this.state.temperatureValues, 
-              config: {circleColor:processColor('white'),
-              drawValues: false,
-              drawCircleHole: false,
-              circleRadius: 2,
-              highlightColor: processColor('orange'),
-              color:processColor('darkblue'),
-              drawFilled: true,
-              fillGradient: {
-                colors: [processColor('darkblue'), processColor('aqua')],
-                orientation: "TOP_BOTTOM"
-              },
-              fillAlpha: 1500
-            }}, 
-
-              {label: "Humidity (%)", values: this.state.humidityValues,
-              config: {circleColor:processColor('white'),
-              drawValues: false,
-              drawCircleHole: false,
-              circleRadius: 2,
-              color:processColor('green'),
-              drawFilled: true,
-              fillGradient: {
-                colors: [processColor('darkgreen'), processColor('greenyellow')],
-                positions: [0, 0.5],
-                angle: 90,
-                orientation: "TOP_BOTTOM"
-              },
-              fillAlpha: 1500
-            }
-            }]}}
-
-            yAxis= {{ left:{ axisMaximum: 100, axisMinimum: 0 }, right:{ axisMaximum: 100, axisMinimum: 0 }}}
-            chartDescription={{ text: "DATE" }}
-            touchEnabled={true}
-            onSelect = {this.getDataUsingGet}
-          />
-          <View style={styles.buttonContainer}>
-
-            <View style={styles.buttonView}>
-              <Button
-              style={styles.button} 
-              title="PREVIOUS PAGE"
-              onPress={() => this.props.navigation.navigate('First')}
-              />
-            </View>
-
-            <View style={styles.buttonView}>
-            {/* <Button
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            title="MIDDLE"
-            onPress={this.getDataUsingGet}
-            /> */}
-            </View>
-            
-            <Button
-            style={{
-              flex: 1,
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-            }}
-            title="NEXT PAGE"
-            onPress={this.updateValue}
-            />
-            
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.temperatureValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1,
+                alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                TEMPERATURE(&deg;C)
+              </Text>
+            </TouchableHighlight>
           </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+          </View>
+        </View>
+
+        <View style={styles.container}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.humidityValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                HUMIDITY(%)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Second')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                PREVIOUS SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Button
+                title="LOAD DATA"
+                disabled={this.state.isFetching}
+                onPress={this.getDataUsingGet}
+              />
+            </TouchableHighlight>
+          </View>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Fourth')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                NEXT SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </View>
+    );
+  }
+}
+
+class FourthScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+    title: '4th Sensor',
+    headerRight: (
+      <Button
+        onPress={() => navigation.navigate('Home')}
+        title="HOME"
+        color="green"
+      />
+    ),
+    headerStyle: {
+      backgroundColor: '#1a7da8',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  });
+  constructor(props) {
+    super(props);
+    this.state = {
+      temperatureValues: [0],
+      humidityValues: [0],
+      isFetching: false
+    };
+  }
+  getDataUsingGet = () => {
+
+    this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
+    ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
+    //GET request 
+    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+      method: 'GET'
+      //Request Type 
+    })
+      .then((response) => response.json())
+      //If response is in json then in success
+      .then((responseJson) => {
+        //Success 
+        console.log(responseJson);
+        this.setState({
+          temperatureValues: [],
+          humidityValues: []
+        })
+        for (let i = 0; i < responseJson.feeds.length; i++) {
+          // console.log("FEED");
+          let obj = responseJson.feeds[i];
+          // console.log(obj);
+          // console.log(obj.field1);   
+          // console.log(obj.field2); 
+          let dateTimeTemp = obj.created_at;
+
+          /*Create {x: , y: } */
+          let temp = new Object();
+          let humid = new Object();
+          if (obj.field7 != null) {
+            temp['y'] = Number(obj.field7);
+            temp['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              temperatureValues: [...this.state.temperatureValues, temp]
+            })
+          }
+          if (obj.field8 != null) {
+            humid['y'] = Number(obj.field8);
+            humid['x'] = Moment(dateTimeTemp).format("DD/MM HH:mm:ss");
+            this.setState({
+              humidityValues: [...this.state.humidityValues, humid]
+            })
+          }
+        }
+
+        /*Check if length of data equals to 0 then set value 0 to chart so that the chart can be display */
+        if (!this.state.temperatureValues.length) {
+          this.setState({
+            temperatureValues: [0]
+          })
+        }
+        if (!this.state.humidityValues.length) {
+          this.setState({
+            humidityValues: [0]
+          })
+        }
+        this.setState({ isFetching: false }, () => { console.log("After fetching: " + this.state.isFetching) });
+      })
+      //If response is not in json then in error
+      .catch((error) => {
+        //Error 
+        alert(JSON.stringify(error));
+        this.setState({ isFetching: false }, () => { console.log("Error fetching: " + this.state.isFetching) });
+        console.error(error);
+      });
+
+  };
+
+  render() {
+    return (
+      <View style={{ flex: 1, backgroundColor: 'dodgerblue' }}>
+        <View style={styles.container}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.temperatureValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1,
+                alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                TEMPERATURE(&deg;C)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+
+          </View>
+        </View>
+
+        <View style={styles.container}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+            <PureChart
+              style={{ flex: 8 }}
+              showEvenNumberXaxisLabel={false}
+              xAxisColor={'black'}
+              yAxisColor={'black'}
+              xAxisGridLineColor={'blue'}
+              yAxisGridLineColor={'red'}
+              data={this.state.humidityValues}
+              type='line' />
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'flex-start',
+                justifyContent: 'center'
+              }}>
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                HUMIDITY(%)
+              </Text>
+            </TouchableHighlight>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'black', borderWidth: 3, borderColor: 'orange' }}>
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={() => this.props.navigation.navigate('Third')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+                PREVIOUS SENSOR
+              </Text>
+            </TouchableHighlight>
+          </View>
+
+          <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Button
+                title="LOAD DATA"
+                disabled={this.state.isFetching}
+                onPress={this.getDataUsingGet}
+              />
+            </TouchableHighlight>
+          </View>
+          
+          <View style={[styles.buttonView, { alignItems: 'center' }]}>
+            <TouchableHighlight
+              style={{
+                flex: 1, alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onLongPress={() => this.props.navigation.navigate('Belfast')}
+            >
+              <Text style={{ color: "white", fontWeight: 'bold', }}>
+
+              </Text>
+            </TouchableHighlight>
+          </View>
+
         </View>
       </View>
     );
@@ -392,14 +1007,17 @@ class SecondScreen extends React.Component {
 }
 
 class BelfastScreen extends React.Component {
+  static navigationOptions = {
+    header: null
+  }
   render() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Image
-        style={{
-          width: 400, height: 600
-        }}
-          source={require('./images/belfast.jpg')}></Image>
+          style={{
+            width: windowWidth, height: windowHeight
+          }}
+          source={require('./images/hokusai.jpg')}></Image>
 
       </View>
     );
@@ -410,17 +1028,17 @@ class BelfastScreen extends React.Component {
 
 const AppNavigator = createStackNavigator(
   {
-  Home: HomeScreen,
-  First: FirstScreen,
-  Second: SecondScreen,
-  Belfast: BelfastScreen,
-  // Third: ThirdScreen,
-  // Fourth: FourthScreen
+    Home: HomeScreen,
+    First: FirstScreen,
+    Second: SecondScreen,
+    Belfast: BelfastScreen,
+    Third: ThirdScreen,
+    Fourth: FourthScreen
   },
   {
     initialRouteName: "Home"
   }
-);  
+);
 
 const AppContainer = createAppContainer(AppNavigator);
 
@@ -463,19 +1081,17 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    flex: 0.12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flex: 0.2,
+    flexDirection: 'row'
   },
 
-  button:{
+  button: {
     flex: 1
   },
 
-  buttonView:{
+  buttonView: {
     flex: 1,
     flexDirection: 'row'
   }
-  
+
 });
