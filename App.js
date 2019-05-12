@@ -7,19 +7,22 @@
  */
 
 import React from "react";
-import { ToastAndroid, Alert, Image, StyleSheet, Button, View, Text, FlatList, Dimensions, TouchableHighlight, processColor } from 'react-native';
+import { ToastAndroid, Alert, Image, StyleSheet, Button, View, Text, TextInput, ImageBackground, Dimensions, TouchableHighlight, processColor } from 'react-native';
 import { createStackNavigator, createAppContainer } from "react-navigation";
 
 import NetInfo from "@react-native-community/netinfo";
 import Moment from 'moment';
 import PureChart from 'react-native-pure-chart';
 
+
 let windowWidth = Dimensions.get('window').width;
 let windowHeight = Dimensions.get('window').height;
+const urlHeader = 'https://api.thingspeak.com/channels/';
+const urlFooter = '/feeds.json';
 
 class HomeScreen extends React.Component {
   static navigationOptions = {
-    title: 'HOME',
+    title: 'WELCOME',
     headerStyle: {
       backgroundColor: 'lawngreen',
     },
@@ -30,10 +33,20 @@ class HomeScreen extends React.Component {
   };
   constructor() {
     super();
-    state = {
+    global.ThingSpeakURL = 'https://api.thingspeak.com/channels/760594/feeds.json';
+    this.state = {
       myState: true,
+      text: '',
+      isConnected: false,
       data: '',
-      isConnected: false
+      temperatureValue01: [0],
+      humidityValue01: [0],
+      temperatureValue02: [0],
+      humidityValue02: [0],
+      temperatureValue03: [0],
+      humidityValue03: [0],
+      temperatureValue04: [0],
+      humidityValue04: [0],
     }
   }
 
@@ -65,7 +78,174 @@ class HomeScreen extends React.Component {
     }
 
     const subscription = NetInfo.addEventListener('connectionChange', netInfoListener);
+
   }
+
+  checkIn = () => {
+    if (this.state.isConnected) {
+      { this.props.navigation.navigate('First') };
+    }
+    else {
+      ToastAndroid.show('No internet connection', ToastAndroid.LONG);
+    }
+  }
+
+  checkURL = () => {
+    return fetch(global.ThingSpeakURL, {
+      method: 'GET'
+      //Request Type 
+    })
+    .then((response) => {
+      if (response.status === 200) {
+        this.props.navigation.navigate('Home02');
+      } else {
+        ToastAndroid.show('Failed! Try again', ToastAndroid.LONG);
+      }
+    }
+    )
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  render() {
+    return (
+      <ImageBackground
+      source={require('./images/waterfall.jpg')}
+      imageStyle={{resizeMode: 'stretch'}}
+      style={{flex: 1,
+        alignSelf: 'stretch',
+        width: null,
+        resizeMode: 'stretch'}}
+ 
+    >
+      <View style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column'
+      }}>
+        <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center'}}>
+          <Text style={{
+            flex: 0.5,
+            color: "white",
+            fontWeight: 'bold',
+            fontSize: 38,
+            textAlign: "center"
+          }}>
+            HỆ THỐNG THU THẬP {"\n"}
+            DỮ LIỆU QUA WIFI
+              </Text>
+        </View>
+
+        {/* <View style={{flex: 1}}>
+            <TouchableHighlight onPress={this.checkIn}>
+                <Image
+                  style={{
+                    flex: 1,
+                    // width: 300, height: 300
+                    resizeMode: 'contain'
+                }}
+                  source={require('./images/dishornored_symbol.jpg')}
+                />
+            </TouchableHighlight>
+          </View>
+             */}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <Text style={{
+            flex: 0.5,
+            color: "white",
+            fontWeight: 'bold',
+            fontSize: 20,
+            textAlign: "center"
+          }}>
+            ENTER THINGSPEAK CHANNEL'S ID
+              </Text>
+
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <TextInput       
+              editable={true}
+              maxLength={20}
+              clearTextOnFocus={true}
+              placeholder="ENTER HERE"
+              placeholderTextColor = "white"
+              onChangeText={(text) => this.setState({ text })}
+              value={this.state.text}
+            >
+
+            </TextInput>
+            <Button
+              title="SUBMIT"
+              // disabled={this.state.isFetching}
+              onPress={() => {
+                if (!this.state.text.length) {
+                  global.ThingSpeakURL = urlHeader + "760594" + urlFooter;
+                } else {
+                  global.ThingSpeakURL = urlHeader + this.state.text + urlFooter;
+                }
+                if(this.state.isConnected){
+                  this.checkURL();
+                }else{
+                  ToastAndroid.show('No internet connection', ToastAndroid.LONG);
+                }
+                
+              }}
+            />
+          </View>
+        </View>
+
+        <View style={{
+          flex: 0.5,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}></View>
+
+        <View style={{
+          flex: 0.5,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}></View>
+      </View>
+      
+
+    </ImageBackground>
+      
+    );
+  }
+}
+
+
+class HomeScreen02 extends React.Component {
+  static navigationOptions = {
+    title: 'HOME',
+    headerStyle: {
+      backgroundColor: 'lawngreen',
+    },
+    headerTintColor: '#000',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  };
+  constructor() {
+    super();
+    this.state = {
+      myState: true,
+      text: '',
+      isConnected: false,
+      data: '',
+      temperatureValue01: [0],
+      humidityValue01: [0],
+      temperatureValue02: [0],
+      humidityValue02: [0],
+      temperatureValue03: [0],
+      humidityValue03: [0],
+      temperatureValue04: [0],
+      humidityValue04: [0],
+    }
+  }
+
 
   checkIn = () => {
     if (this.state.isConnected) {
@@ -112,16 +292,12 @@ class HomeScreen extends React.Component {
           </View>
              */}
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: windowWidth, backgroundColor: 'black' }}>
-          <Text style={{
-            flex: 0.5,
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: 23,
-            textAlign: "center"
-          }}>
-            CHỌN SENSOR MUỐN XEM {"\n"}
-            (cần kết nối Internet)
-              </Text>
+        <Image
+          style={{flex: 1,
+            aspectRatio: 1, 
+            resizeMode: 'contain'}}
+          source={require('./images/wifi.png')}
+        />
         </View>
 
         <View style={{
@@ -137,7 +313,10 @@ class HomeScreen extends React.Component {
                 flex: 1, alignItems: 'center',
                 justifyContent: 'center'
               }}
-              onPress={() => this.props.navigation.navigate('First')}
+              onPress={() => this.props.navigation.navigate('First', {
+                temperature: this.state.temperatureValue01,
+                humidity: this.state.humidityValue01,
+              })}
             >
               <Text style={{ color: "white", fontWeight: 'bold', }}>
                 1ST SENSOR
@@ -151,7 +330,10 @@ class HomeScreen extends React.Component {
                 flex: 1, alignItems: 'center',
                 justifyContent: 'center'
               }}
-              onPress={() => this.props.navigation.navigate('Second')}
+              onPress={() => this.props.navigation.navigate('Second', {
+                temperature: this.state.temperatureValue02,
+                humidity: this.state.humidityValue02,
+              })}
             >
               <Text style={{ color: "white", fontWeight: 'bold', }}>
                 2ND SENSOR
@@ -200,12 +382,13 @@ class HomeScreen extends React.Component {
   }
 }
 
+
 class FirstScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
     title: '1st Sensor',
     headerRight: (
       <Button
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('Home02')}
         title="HOME"
         color="green"
       />
@@ -223,18 +406,19 @@ class FirstScreen extends React.Component {
     super(props);
 
     this.state = {
-      temperatureValues: [0],
-      humidityValues: [0],
+      temperatureValues: this.props.navigation.getParam('temperature', [0]),
+      humidityValues: this.props.navigation.getParam('humidity', [0]),
       isFetching: false
     };
 
   }
 
+
   getDataUsingGet = () => {
     this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
     ToastAndroid.show('Loading...', ToastAndroid.LONG);
     //GET request 
-    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+    fetch(global.ThingSpeakURL, {
       method: 'GET'
       //Request Type 
     })
@@ -275,7 +459,6 @@ class FirstScreen extends React.Component {
             })
           }
         }
-
         /*Check if length of data equals to 0 then set value 0 to chart so that the chart can be display */
         if (!this.state.temperatureValues.length) {
           this.setState({
@@ -287,6 +470,8 @@ class FirstScreen extends React.Component {
             humidityValues: [0]
           })
         }
+
+
         this.setState({ isFetching: false }, () => {
           console.log("After fetching: " + this.state.isFetching),
             console.log(JSON.stringify(this.state.temperatureValues)),
@@ -296,19 +481,20 @@ class FirstScreen extends React.Component {
       //If response is not in json then in error
       .catch((error) => {
         //Error 
-        alert(JSON.stringify(error));
         this.setState({ isFetching: false }, () => { console.log("After fetching: " + this.state.isFetching) });
         console.error(error);
       });
   };
 
   render() {
-    const { navigation } = this.props.navigation;
+    const { navigation } = this.props;
+
 
     return (
+
       <View style={{ flex: 1, backgroundColor: 'dodgerblue' }}>
         <View style={styles.container}>
-          <View style={{ flex:9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
+          <View style={{ flex: 9, backgroundColor: 'deepskyblue', borderWidth: 3, borderColor: 'green' }}>
             <PureChart
               style={{ flex: 8 }}
               showEvenNumberXaxisLabel={false}
@@ -409,7 +595,7 @@ class SecondScreen extends React.Component {
     title: '2nd Sensor',
     headerRight: (
       <Button
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('Home02')}
         title="HOME"
         color="green"
       />
@@ -435,7 +621,7 @@ class SecondScreen extends React.Component {
     this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
     ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
     //GET request 
-    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+    fetch(global.ThingSpeakURL, {
       method: 'GET'
       //Request Type 
     })
@@ -497,8 +683,9 @@ class SecondScreen extends React.Component {
       });
 
   };
-    
+
   render() {
+    const { navigation } = this.props;
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.container}>
@@ -609,7 +796,7 @@ class ThirdScreen extends React.Component {
     title: '3rd Sensor',
     headerRight: (
       <Button
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('Home02')}
         title="HOME"
         color="green"
       />
@@ -636,7 +823,7 @@ class ThirdScreen extends React.Component {
     this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
     ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
     //GET request 
-    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+    fetch(global.ThingSpeakURL, {
       method: 'GET'
       //Request Type 
     })
@@ -811,7 +998,7 @@ class FourthScreen extends React.Component {
     title: '4th Sensor',
     headerRight: (
       <Button
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('Home02')}
         title="HOME"
         color="green"
       />
@@ -837,7 +1024,7 @@ class FourthScreen extends React.Component {
     this.setState({ isFetching: true }, () => { console.log("Before fetching: " + this.state.isFetching) });
     ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
     //GET request 
-    fetch('https://api.thingspeak.com/channels/760594/feeds.json', {
+    fetch(global.ThingSpeakURL, {
       method: 'GET'
       //Request Type 
     })
@@ -985,7 +1172,7 @@ class FourthScreen extends React.Component {
               />
             </TouchableHighlight>
           </View>
-          
+
           <View style={[styles.buttonView, { alignItems: 'center' }]}>
             <TouchableHighlight
               style={{
@@ -1029,6 +1216,7 @@ class BelfastScreen extends React.Component {
 const AppNavigator = createStackNavigator(
   {
     Home: HomeScreen,
+    Home02: HomeScreen02,
     First: FirstScreen,
     Second: SecondScreen,
     Belfast: BelfastScreen,
