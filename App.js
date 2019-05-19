@@ -340,42 +340,42 @@ class HomeScreen02 extends React.Component {
         }
 
         /*Assign temporary values to states */
-        if (tempArray01.length > 0) {
+        if (tempArray01.length > 1) {
           this.setState({
             temperatureValues01: tempArray01,
           })
         }
-        if (humidArray01.length > 0) {
+        if (humidArray01.length > 1) {
           this.setState({
             humidityValues01: humidArray01,
           })
         }
-        if (tempArray02.length > 0) {
+        if (tempArray02.length > 1) {
           this.setState({
             temperatureValues02: tempArray02,
           })
         }
-        if (humidArray02.length > 0) {
+        if (humidArray02.length > 1) {
           this.setState({
             humidityValues02: humidArray02,
           })
         }
-        if (tempArray03.length > 0) {
+        if (tempArray03.length > 1) {
           this.setState({
             temperatureValues03: tempArray03,
           })
         }
-        if (humidArray03.length > 0) {
+        if (humidArray03.length > 1) {
           this.setState({
             humidityValues03: humidArray03,
           })
         }
-        if (tempArray04.length > 0) {
+        if (tempArray04.length > 1) {
           this.setState({
             temperatureValues04: tempArray04,
           })
         }
-        if (humidArray04.length > 0) {
+        if (humidArray04.length > 1) {
           this.setState({
             humidityValues04: humidArray04,
           })
@@ -614,13 +614,13 @@ class FirstScreen extends React.Component {
         }
 
 
-        if (tempArray.length > 0) {
+        if (tempArray.length > 1) {
           this.setState({
             temperatureValues: tempArray,
           })
         }
 
-        if (humidArray.length > 0) {
+        if (humidArray.length > 1) {
           this.setState({
             humidityValues: humidArray,
           })
@@ -833,13 +833,13 @@ class SecondScreen extends React.Component {
         }
 
 
-        if (tempArray.length > 0) {
+        if (tempArray.length > 1) {
           this.setState({
             temperatureValues: tempArray,
           })
         }
 
-        if (humidArray.length > 0) {
+        if (humidArray.length > 1) {
           this.setState({
             humidityValues: humidArray,
           })
@@ -1047,13 +1047,13 @@ class ThirdScreen extends React.Component {
         }
 
 
-        if (tempArray.length > 0) {
+        if (tempArray.length > 1) {
           this.setState({
             temperatureValues: tempArray,
           })
         }
 
-        if (humidArray.length > 0) {
+        if (humidArray.length > 1) {
           this.setState({
             humidityValues: humidArray,
           })
@@ -1264,13 +1264,13 @@ class FourthScreen extends React.Component {
         }
 
 
-        if (tempArray.length > 0) {
+        if (tempArray.length > 1) {
           this.setState({
             temperatureValues: tempArray,
           })
         }
 
-        if (humidArray.length > 0) {
+        if (humidArray.length > 1) {
           this.setState({
             humidityValues: humidArray,
           })
