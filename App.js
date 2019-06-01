@@ -13,7 +13,7 @@ import { createStackNavigator, createAppContainer, createMaterialTopTabNavigator
 import NetInfo from "@react-native-community/netinfo";
 import Moment from 'moment';
 import PureChart from 'react-native-pure-chart';
-import { VictoryBar, VictoryChart, VictoryTheme, VictoryLine, VictoryScatter } from "victory-native";
+import { VictoryBar, VictoryChart, VictoryTheme, VictoryLine, VictoryScatter, VictoryAxis } from "victory-native";
 
 let windowWidth = Dimensions.get('window').width;
 let windowHeight = Dimensions.get('window').height;
@@ -24,7 +24,7 @@ class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'WELCOME',
     headerStyle: {
-      backgroundColor: 'lawngreen',
+      backgroundColor: '#1a7da8',
     },
     headerTintColor: '#000',
     headerTitleStyle: {
@@ -125,8 +125,9 @@ class HomeScreen extends React.Component {
               fontSize: 38,
               textAlign: "center"
             }}>
-              HỆ THỐNG THU THẬP {"\n"}
-              DỮ LIỆU QUA WIFI
+              SENSOR DATA MONITOR {"\n"}
+              MOBILE APP {"\n"}
+              (WI-FI)
               </Text>
           </View>
 
@@ -215,7 +216,7 @@ class HomeScreen02 extends React.Component {
   static navigationOptions = {
     title: 'HOME',
     headerStyle: {
-      backgroundColor: 'lawngreen',
+      backgroundColor: '#1a7da8',
     },
     headerTintColor: '#000',
     headerTitleStyle: {
@@ -238,6 +239,7 @@ class HomeScreen02 extends React.Component {
       temperatureValues04: [{ x: 0, y: 0 }, { x: 0, y: 0 }],
       humidityValues04: [{ x: 0, y: 0 }, { x: 0, y: 0 }],
     }
+
   }
 
   getDataUsingGet = () => {
@@ -437,8 +439,8 @@ class HomeScreen02 extends React.Component {
                 position: 'absolute',
                 textAlign: "center"
               }}>
-                HỆ THỐNG THU THẬP {"\n"}
-                DỮ LIỆU QUA WIFI
+                SENSOR DATA MONITOR {"\n"}
+                MOBILE APP
               </Text>
             </View>
           </ImageBackground>
@@ -558,7 +560,8 @@ class FirstScreen extends React.Component {
     this.state = {
       temperatureValues: this.props.navigation.dangerouslyGetParent().getParam('temp01', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
       humidityValues: this.props.navigation.dangerouslyGetParent().getParam('humid01', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
-      isFetching: false
+      isFetching: false,
+      text: '',
     };
 
   }
@@ -574,8 +577,17 @@ class FirstScreen extends React.Component {
       () => { console.log("Before fetching: " + this.state.isFetching) }
     );
     ToastAndroid.show('Loading...', ToastAndroid.LONG);
+
+    let URL = global.ThingSpeakURL;
+    if (this.state.text.length > 0) {
+      let number = Number(this.state.text);
+      if (number > 0) {
+        URL = URL + "?days=" + number;
+      }
+    }
+
     //GET request 
-    fetch(global.ThingSpeakURL, {
+    fetch(URL, {
       method: 'GET'
       //Request Type 
     })
@@ -583,7 +595,7 @@ class FirstScreen extends React.Component {
       //If response is in json then in success
       .then((responseJson) => {
         //Success 
-        console.log(responseJson);
+        // console.log(responseJson);
 
         let tempArray = [];
         let humidArray = [];
@@ -640,69 +652,77 @@ class FirstScreen extends React.Component {
       });
   };
 
+  whiteStyle = {
+    axis: { stroke: "white" },
+    axisLabel: { fontSize: 20, padding: 30, fill: "white" },
+    ticks: { stroke: "white", size: 5, },
+    tickLabels: { fontSize: 15, padding: 5, fill: "white" }
+  }
+
   render() {
     const { navigation } = this.props;
-
-
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            crossAxis={false}
+            domain={{ y: [-10, 100] }}
             scale={{ x: "time" }}>
-            <VictoryScatter
-              style={{ data: { fill: 'green' } }}
-              size={4}
-              data={this.state.temperatureValues}
-              x="x" y="y"
-            />
             <VictoryLine
               style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
+                data: { stroke: "#ff0000", strokeWidth: 2 },
+                // parent: { border: "1px solid #ccc" }
               }}
               data={this.state.temperatureValues}
               x="x" y="y"
             />
+            <VictoryScatter
+              style={{
+                data: { fill: '#ffff99' },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
+              size={4}
+              data={this.state.temperatureValues}
+              x="x" y="y"
+            />
+            <VictoryAxis
+              label={"TEMPERATURE(\u00B0 C)"}
+              style={this.whiteStyle}
+            />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              TEMPERATURE(&deg;C)
-              </Text>
-          </TouchableHighlight>
         </View>
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            domain={{ y: [0, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#0099ff", strokeWidth: 2 },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
+              data={this.state.humidityValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{ data: { fill: '#00cc00' } }}
               size={4}
               data={this.state.humidityValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-              data={this.state.humidityValues}
-              x="x" y="y"
+
+            <VictoryAxis
+              label={"HUMIDITY (%)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              HUMIDITY(%)
-              </Text>
-          </TouchableHighlight>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -714,9 +734,19 @@ class FirstScreen extends React.Component {
               }}
             // onLongPress={() => this.props.navigation.navigate('Belfast')}
             >
-              <Text style={{ color: "white", fontWeight: 'bold', }}>
-
-              </Text>
+              <TextInput
+                // selectionColor="green"
+                underlineColorAndroid="red"
+                textAlign={'center'}
+                editable={true}
+                keyboardType='numeric'
+                maxLength={3}
+                clearTextOnFocus={true}
+                placeholder="ENTER DAYS"
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ text })}
+                value={this.state.text}
+              />
             </TouchableHighlight>
           </View>
           <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
@@ -780,7 +810,8 @@ class SecondScreen extends React.Component {
     this.state = {
       temperatureValues: this.props.navigation.dangerouslyGetParent().getParam('temp02', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
       humidityValues: this.props.navigation.dangerouslyGetParent().getParam('humid02', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
-      isFetching: false
+      isFetching: false,
+      text: '',
     };
   }
   getDataUsingGet = () => {
@@ -794,8 +825,17 @@ class SecondScreen extends React.Component {
       () => { console.log("Before fetching: " + this.state.isFetching) }
     );
     ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
+
+    let URL = global.ThingSpeakURL;
+    if (this.state.text.length > 0) {
+      let number = Number(this.state.text);
+      if (number > 0) {
+        URL = URL + "?days=" + number;
+      }
+    }
+
     //GET request 
-    fetch(global.ThingSpeakURL, {
+    fetch(URL, {
       method: 'GET'
       //Request Type 
     })
@@ -856,6 +896,13 @@ class SecondScreen extends React.Component {
 
   };
 
+  whiteStyle = {
+    axis: { stroke: "white" },
+    axisLabel: { fontSize: 20, padding: 30, fill: "white" },
+    ticks: { stroke: "white", size: 5, },
+    tickLabels: { fontSize: 15, padding: 5, fill: "white" }
+  }
+
   render() {
     const { navigation } = this.props;
     return (
@@ -863,61 +910,62 @@ class SecondScreen extends React.Component {
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            crossAxis={false}
+            domain={{ y: [-10, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#ff0000", strokeWidth: 2 },
+                // parent: { border: "1px solid #ccc" }
+              }}
+              data={this.state.temperatureValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{
+                data: { fill: '#ffff99' },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
               size={4}
               data={this.state.temperatureValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-
-              data={this.state.temperatureValues}
-              x="x" y="y"
+            <VictoryAxis
+              label={"TEMPERATURE(\u00B0 C)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              TEMPERATURE(&deg;C)
-              </Text>
-          </TouchableHighlight>
         </View>
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            domain={{ y: [0, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#0099ff", strokeWidth: 2 },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
+              data={this.state.humidityValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{ data: { fill: '#00cc00' } }}
               size={4}
               data={this.state.humidityValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-              data={this.state.humidityValues}
-              x="x" y="y"
+            <VictoryAxis
+              label={"HUMIDITY (%)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              HUMIDITY(%)
-              </Text>
-          </TouchableHighlight>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -930,9 +978,18 @@ class SecondScreen extends React.Component {
               }}
             // onPress={() => this.props.navigation.navigate('First')}
             >
-              <Text style={{ color: "white", fontWeight: 'bold', }}>
-                {/* PREVIOUS SENSOR */}
-              </Text>
+              <TextInput
+                underlineColorAndroid="red"
+                textAlign={'center'}
+                editable={true}
+                keyboardType='numeric'
+                maxLength={3}
+                clearTextOnFocus={true}
+                placeholder="ENTER DAYS"
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ text })}
+                value={this.state.text}
+              />
             </TouchableHighlight>
           </View>
 
@@ -993,7 +1050,8 @@ class ThirdScreen extends React.Component {
     this.state = {
       temperatureValues: this.props.navigation.dangerouslyGetParent().getParam('temp03', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
       humidityValues: this.props.navigation.dangerouslyGetParent().getParam('humid03', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
-      isFetching: false
+      isFetching: false,
+      text: '',
     };
   }
 
@@ -1008,8 +1066,21 @@ class ThirdScreen extends React.Component {
       () => { console.log("Before fetching: " + this.state.isFetching) }
     );
     ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
+
+
+    let URL = global.ThingSpeakURL;
+    console.log("Length: " + this.state.text.length);
+    if (this.state.text.length > 0) {
+      let number = Number(this.state.text);
+      // console.log("Number: "+ number);
+      if (number > 0) {
+        URL = URL + "?days=" + number;
+        // console.log(URL);
+      }
+    }
+
     //GET request 
-    fetch(global.ThingSpeakURL, {
+    fetch(URL, {
       method: 'GET'
       //Request Type 
     })
@@ -1017,7 +1088,7 @@ class ThirdScreen extends React.Component {
       //If response is in json then in success
       .then((responseJson) => {
         //Success 
-        console.log(responseJson);
+        // console.log(responseJson);
         let tempArray = [];
         let humidArray = [];
 
@@ -1070,6 +1141,13 @@ class ThirdScreen extends React.Component {
 
   };
 
+  whiteStyle = {
+    axis: { stroke: "white" },
+    axisLabel: { fontSize: 20, padding: 30, fill: "white" },
+    ticks: { stroke: "white", size: 5, },
+    tickLabels: { fontSize: 15, padding: 5, fill: "white" }
+  }
+
   render() {
     const { navigation } = this.props;
     return (
@@ -1077,68 +1155,65 @@ class ThirdScreen extends React.Component {
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            crossAxis={false}
+            domain={{ y: [-10, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#ff0000", strokeWidth: 2 },
+                // parent: { border: "1px solid #ccc" }
+              }}
+              data={this.state.temperatureValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{
+                data: { fill: '#ffff99' },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
               size={4}
               data={this.state.temperatureValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-
-              data={this.state.temperatureValues}
-              x="x" y="y"
-
+            <VictoryAxis
+              label={"TEMPERATURE(\u00B0 C)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              TEMPERATURE(&deg;C)
-              </Text>
-          </TouchableHighlight>
         </View>
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            domain={{ y: [0, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#0099ff", strokeWidth: 2 },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
+              data={this.state.humidityValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{ data: { fill: '#00cc00' } }}
               size={4}
               data={this.state.humidityValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-
-              data={this.state.humidityValues}
-              x="x" y="y"
-
+            <VictoryAxis
+              label={"HUMIDITY (%)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              HUMIDITY(%)
-              </Text>
-          </TouchableHighlight>
         </View>
 
         <View style={styles.buttonContainer}>
-
           <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
             <TouchableHighlight
               style={{
@@ -1147,9 +1222,18 @@ class ThirdScreen extends React.Component {
               }}
             // onPress={() => this.props.navigation.navigate('First')}
             >
-              <Text style={{ color: "white", fontWeight: 'bold', }}>
-                {/* PREVIOUS SENSOR */}
-              </Text>
+              <TextInput
+                underlineColorAndroid="red"
+                textAlign={'center'}
+                editable={true}
+                keyboardType='numeric'
+                maxLength={3}
+                clearTextOnFocus={true}
+                placeholder="ENTER DAYS"
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ text })}
+                value={this.state.text}
+              />
             </TouchableHighlight>
           </View>
 
@@ -1210,7 +1294,8 @@ class FourthScreen extends React.Component {
     this.state = {
       temperatureValues: this.props.navigation.dangerouslyGetParent().getParam('temp04', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
       humidityValues: this.props.navigation.dangerouslyGetParent().getParam('humid04', [{ x: 0, y: 0 }, { x: 0, y: 0 }]),
-      isFetching: false
+      isFetching: false,
+      text: '',
     };
   }
 
@@ -1225,8 +1310,18 @@ class FourthScreen extends React.Component {
       () => { console.log("Before fetching: " + this.state.isFetching) }
     );
     ToastAndroid.show('Loading data from server! >W<', ToastAndroid.LONG);
+
+
+    let URL = global.ThingSpeakURL;
+    if (this.state.text.length > 0) {
+      let number = Number(this.state.text);
+      if (number > 0) {
+        URL = URL + "?days=" + number;
+      }
+    }
+
     //GET request 
-    fetch(global.ThingSpeakURL, {
+    fetch(URL, {
       method: 'GET'
       //Request Type 
     })
@@ -1287,6 +1382,13 @@ class FourthScreen extends React.Component {
 
   };
 
+  whiteStyle = {
+    axis: { stroke: "white" },
+    axisLabel: { fontSize: 20, padding: 30, fill: "white" },
+    ticks: { stroke: "white", size: 5, },
+    tickLabels: { fontSize: 15, padding: 5, fill: "white" }
+  }
+
   render() {
     const { navigation } = this.props;
     return (
@@ -1294,68 +1396,65 @@ class FourthScreen extends React.Component {
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            crossAxis={false}
+            domain={{ y: [-10, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#ff0000", strokeWidth: 2 },
+                // parent: { border: "1px solid #ccc" }
+              }}
+              data={this.state.temperatureValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{
+                data: { fill: '#ffff99' },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
               size={4}
               data={this.state.temperatureValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-
-              data={this.state.temperatureValues}
-              x="x" y="y"
-
+            <VictoryAxis
+              label={"TEMPERATURE(\u00B0 C)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              TEMPERATURE(&deg;C)
-              </Text>
-          </TouchableHighlight>
         </View>
         <View style={styles.container}>
           <VictoryChart height={windowHeight / 3} theme={VictoryTheme.material}
             // 
+            domain={{ y: [0, 100] }}
             scale={{ x: "time" }}>
+            <VictoryLine
+              style={{
+                data: { stroke: "#0099ff", strokeWidth: 2 },
+                labels: {
+                  fontSize: 15, fill: "#ffff00", padding: 15
+                }
+              }}
+              labels={(datum) => datum.y}
+              data={this.state.humidityValues}
+              x="x" y="y"
+            />
             <VictoryScatter
-              style={{ data: { fill: 'green' } }}
+              style={{ data: { fill: '#00cc00' } }}
               size={4}
               data={this.state.humidityValues}
               x="x" y="y"
             />
-            <VictoryLine
-              style={{
-                data: { stroke: "#c43a31", strokeWidth: 2 },
-                parent: { border: "1px solid #ccc" }
-              }}
-
-              data={this.state.humidityValues}
-              x="x" y="y"
-
+            <VictoryAxis
+              label={"HUMIDITY (%)"}
+              style={this.whiteStyle}
             />
           </VictoryChart>
-          <TouchableHighlight
-            style={{
-              flex: 1, alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Text style={{ color: "white", fontWeight: 'bold', }}>
-              HUMIDITY(%)
-              </Text>
-          </TouchableHighlight>
         </View>
-
+ 
         <View style={styles.buttonContainer}>
-
           <View style={[styles.buttonView, { alignItems: 'center', backgroundColor: 'dodgerblue' }]}>
             <TouchableHighlight
               style={{
@@ -1364,9 +1463,18 @@ class FourthScreen extends React.Component {
               }}
             // onPress={() => this.props.navigation.navigate('First')}
             >
-              <Text style={{ color: "white", fontWeight: 'bold', }}>
-                {/* PREVIOUS SENSOR */}
-              </Text>
+              <TextInput
+                underlineColorAndroid="red"
+                textAlign={'center'}
+                editable={true}
+                keyboardType='numeric'
+                maxLength={3}
+                clearTextOnFocus={true}
+                placeholder="ENTER DAYS"
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ text })}
+                value={this.state.text}
+              />
             </TouchableHighlight>
           </View>
 
@@ -1414,11 +1522,19 @@ class BelfastScreen extends React.Component {
   render() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Image
-          style={{
-            width: windowWidth, height: windowHeight
-          }}
-          source={require('./images/hokusai.jpg')}></Image>
+        <Text style={{
+          flex: 0.5,
+          color: "black",
+          fontWeight: 'bold',
+          fontSize: 16,
+          textAlign: "center"
+        }}>
+          DEVELOPER: {"\n"}
+          LÊ HUY THỊNH, {"\n"}
+          Khoa Khoa học và Kỹ thuật máy tính{"\n"}
+          Trường Đại học Bách Khoa TPHCM{"\n"}
+          Niên khóa 2014
+              </Text>
 
       </View>
     );
@@ -1444,13 +1560,6 @@ const AppNavigator = createStackNavigator(
       screen: SensorScreen,
       navigationOptions: ({ navigation }) => ({
         title: 'Sensor Screen',
-        headerRight: (
-          <Button
-            onPress={() => navigation.navigate('Home02')}
-            title="HOME"
-            color="green"
-          />
-        ),
         headerStyle: {
           backgroundColor: '#1a7da8',
         },
@@ -1511,7 +1620,7 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    flex: 0.2,
+    flex: 0.25,
     flexDirection: 'row'
   },
 
